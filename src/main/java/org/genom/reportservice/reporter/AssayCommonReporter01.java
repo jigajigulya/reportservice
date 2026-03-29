@@ -1,4 +1,3 @@
-/*
 package org.genom.reportservice.reporter;
 
 import com.gnm.enums.*;
@@ -16,8 +15,8 @@ import com.gnm.model.pmon.calc.PhytoSubjectState;
 import com.gnm.model.pmon.calc.SubjectCommonReport;
 import com.gnm.service.AssayService;
 import com.gnm.service.ContractorService;
-import com.gnm.service.ReporterService;
 import com.gnm.utils.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -29,15 +28,19 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.genom.reportservice.comparator.PhytoSubjectStateComparator;
-import org.primefaces.model.DefaultStreamedContent;
+import org.genom.reportservice.model.ContractorLite;
+import org.genom.reportservice.repository.ContractorRepo;
+import org.genom.reportservice.repository.ReportRep;
+import org.genom.reportservice.service.ReporterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Component;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,27 +53,23 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.gnm.utils.CommonUtils.getTemplatePath;
 import static com.gnm.utils.NumberUtils.isNullReturnZero;
 import static com.gnm.utils.NumberUtils.parseDouble;
-import static com.gnm.utils.doc.DocTemplateXLSWorker.colNumToColChar;
+import static org.genom.reportservice.utils.DocUtilsLite.colNumToColChar;
 
-@Slf4j
+
+@Component
+@RequiredArgsConstructor
 public class AssayCommonReporter01 {
 
+    public static final Logger log = LoggerFactory.getLogger(AssayCommonReporter01.class);
 
 
-
-    @Inject
-    private AssayService assayService;
-
-
-    @Inject
-    private ReporterService reporterService;
+    private final ReporterService reporterService;
+    private final ContractorRepo contractorRepo;
+    private final ResourceLoader resourceLoader;
 
 
-    @Inject
-    private ContractorService contractorService;
 
 
     void shiftLeftColumns(XSSFRow row, int startingIndex, int shiftCount) {
@@ -163,7 +162,7 @@ public class AssayCommonReporter01 {
                 .anyMatch(code -> subjectStates.stream().map(PhytoSubjectState::getPhytosubjectCode).filter(Objects::nonNull).anyMatch(codeState -> Objects.equals(codeState, code)));
     }
 
-    public void makeSheetReportCommonAssayState(XSSFWorkbook workbook, SXSSFWorkbook sxs_workbook, XSSFSheet sheet, XSSFSheet sheet_template, List<AssayCommonReport> assays, PhytoTypeEnum phytoType, CommonAssayReport report, List<PhytoSubjectState> weedsIn, List<PhytoSubjectState> diseasesIn, List<PhytoSubjectState> pestsIn) throws IOException {
+    public Map<String, String> makeSheetReportCommonAssayState(XSSFWorkbook workbook, SXSSFWorkbook sxs_workbook, XSSFSheet sheet, XSSFSheet sheet_template, List<AssayCommonReport> assays, PhytoTypeEnum phytoType, CommonAssayReport report, List<PhytoSubjectState> weedsIn, List<PhytoSubjectState> diseasesIn, List<PhytoSubjectState> pestsIn) throws IOException {
         Chronograph.start(4);
 
         try {
@@ -174,7 +173,7 @@ public class AssayCommonReporter01 {
 
         if (CollectionUtils.isNullOrEmpty(assays)) {
             log.info("cancel , assays is empty");
-            CommonUtils.showFacesMessage(FacesMessage.SEVERITY_ERROR, "Не найдено данных удовлетворяющим критериям фильтрации", "Попробуйте еще раз указав другие параметры");
+            return Map.of("Не найдено данных удовлетворяющим критериям фильтрации", "Попробуйте еще раз указав другие параметры");
         } else {
 
 
@@ -857,7 +856,7 @@ public class AssayCommonReporter01 {
                                 }
                                 break;
                             case "Boolean":
-                                if (StringUtils.equals("true", field_value)) {
+                                if (StringUtils.equalsStrings("true", field_value)) {
                                     sxs_newRow.getCell(col_ins).setCellType(CellType.BOOLEAN);
                                     sxs_newRow.getCell(col_ins).setCellValue(true);
                                 } else {
@@ -883,7 +882,7 @@ public class AssayCommonReporter01 {
                             case "Contractor":
                                 try {
                                     Long contractor_id = Long.parseLong(field_value);
-                                    Optional<Contractor> contractor_value = contractorService.findById(contractor_id);
+                                    Optional<ContractorLite> contractor_value = contractorRepo.findById(contractor_id);
                                     if (contractor_value.isPresent()) {
                                         sxs_newRow.getCell(col_ins).setCellValue(contractor_value.get().getNameShort());
                                     } else {
@@ -1947,8 +1946,6 @@ public class AssayCommonReporter01 {
                             }
 
 
-
-
                             sxs_newRow.getCell(col_area_check).setCellFormula("SUM(" + genArrayColumnRows(colNumToColChar(col_area_check), township_rows) + ")");
                             sxs_newRow.getCell(col_area_pest).setCellFormula("SUM(" + genArrayColumnRows(colNumToColChar(col_area_pest), township_rows) + ")");
                             sxs_newRow.getCell(col_count).setCellFormula("IFERROR(AVERAGE(" + genArrayColumnRows(colNumToColChar(col_count), township_rows) + "),\"\")");
@@ -2109,6 +2106,7 @@ public class AssayCommonReporter01 {
 
             log.info("TRACE makeSheetReportCommonAssayState END " + Chronograph.getTime(4));
         }
+        return new HashMap<>();
     }
 
     private Double getTreatmentVolume(SubjectCommonReport prot) {
@@ -2175,7 +2173,7 @@ public class AssayCommonReporter01 {
 
         for (AssayCommonReport assay : assays) {
             for (PhytoSubjectState ph_sub_state : inSubjects) {
-                if (assayService.getSubjectBySubjectState(assay, ph_sub_state) != null) {
+                if (AssayService.getSubjectBySubjectState(assay, ph_sub_state) != null) {
                     if (!retSubjects.contains(ph_sub_state)) {
                         retSubjects.add(ph_sub_state);
                     }
@@ -2214,7 +2212,7 @@ public class AssayCommonReporter01 {
     }
 
 
-    public DefaultStreamedContent makeReportCommonAssay01(LocalDateTime dateBegin, LocalDateTime dateEnd, List<TerTownship> townships, Collection<ClimaticZone> zones, DepartmentStructure departmentRegion, CommonAssayReport report) {
+    public byte[] makeReportCommonAssay01(CommonAssayReport report) {
         log.info("TRACE CoomonAssay BEGIN");
 
         Chronograph.start(3);
@@ -2227,7 +2225,7 @@ public class AssayCommonReporter01 {
             java.awt.Color color_diseases = new java.awt.Color(196, 215, 155);
             java.awt.Color color_pests = new java.awt.Color(146, 205, 220);
 
-            FileInputStream in = new FileInputStream(getTemplatePath(FacesContext.getCurrentInstance().getExternalContext(), "docs", "report_common_01", "xlsx"));
+            InputStream in = resourceLoader.getResource("classpath:excel/report_common_01.xlsx").getInputStream();
             OPCPackage pkg = OPCPackage.open(in);
             workbook = new XSSFWorkbook(pkg);
 
@@ -2456,13 +2454,7 @@ public class AssayCommonReporter01 {
                 log.info("TRACE CoomonAssay END request ... " + Chronograph.getTime(3));
 
 
-                try (ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
-                    return DefaultStreamedContent.builder()
-                            .name("Отчет " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(new Locale("ru")).format(LocalDateTime.now()) + ".xlsx")
-                            .contentType("xlsx")
-                            .stream(() -> inputStream)
-                            .build();
-                }
+                return out.toByteArray();
             }
 
 //            return new DefaultStreamedContent(new ByteArrayInputStream(out.toByteArray()), "xlsx", "Отчет " +
@@ -2475,7 +2467,6 @@ public class AssayCommonReporter01 {
 
         return null;
     }
-
 
 
     private String getSheetSuffixByCtakc(CropTypeAndKindCulture ctakc) {
@@ -2520,4 +2511,3 @@ public class AssayCommonReporter01 {
         }
     }
 }
-*/

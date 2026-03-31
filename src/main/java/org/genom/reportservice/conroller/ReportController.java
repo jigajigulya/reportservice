@@ -11,10 +11,13 @@ import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
+import org.genom.reportservice.criteria.PhytoExpertizeCriteria;
 import org.genom.reportservice.reporter.AssayCommonReporter01;
+import org.genom.reportservice.reporter.PhytoExpQualReporter;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.annotation.RequestScope;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -23,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@RequestScope
 @RestController
 @RequestMapping(path = "reports", produces = "application/json")
 @CrossOrigin(origins = {"http://localhost:8080/pmon", "https://rscagex.ru/pmon/"})
@@ -31,6 +35,7 @@ import java.util.stream.Stream;
 public class ReportController {
 
     private final AssayCommonReporter01 reporter01;
+    private final PhytoExpQualReporter phytoExpReporter;
     /*.queryParam("dateBegin", dateBegin)
                 .queryParam("dateEnd", dateEnd)
                 .queryParam("towns",Stream.ofNullable(selectedTownships).flatMap(Collection::stream).map(TerTownship::getId).collect(Collectors.toList()))
@@ -42,6 +47,17 @@ public class ReportController {
     public ResponseEntity<byte[]> getReport(@RequestBody CommonAssayReport commonAssayReport) {
         byte[] bytes = reporter01.makeReportCommonAssay01(
                 commonAssayReport
+        );
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bytes);
+
+    }
+
+    @PostMapping(value = "/phytoexpreport", consumes = "application/json")
+    public ResponseEntity<byte[]> getReport(@RequestBody PhytoExpertizeCriteria criteria) {
+        byte[] bytes = phytoExpReporter.download(
+                criteria
         );
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))

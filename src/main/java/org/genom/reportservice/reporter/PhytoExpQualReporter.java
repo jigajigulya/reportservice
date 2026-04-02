@@ -248,9 +248,17 @@ public class PhytoExpQualReporter implements FormulaXLSConstructorInt, RowXlsCre
     @Override
     public void evalNullFillAction(Cell cell) {
         RowXlsCreatorEditorInt.super.evalNullFillAction(cell);
-        if (isPercentInfectedCell(cell)) {
+        if (isPercentInfectedCell(cell) || isCheckedCell(cell)) {
             cell.setCellValue(0D);
         }
+    }
+
+    private boolean isCheckedCell(Cell cell) {
+        return cell.getSheet()
+                .getWorkbook()
+                .getSheetAt(SHEET.TEMPLATE.idx)
+                .getRow(ROW.SAMPLE_ROW.idx)
+                .getCell(cell.getColumnIndex()).getStringCellValue().contains("checked");
     }
 
     private boolean earlyPredicate(TuberQualReport exp) {

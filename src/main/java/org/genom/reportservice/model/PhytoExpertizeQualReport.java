@@ -56,8 +56,10 @@ public class PhytoExpertizeQualReport extends PhytoExpertizeReport implements Se
     @Column
     private Integer samplesCount;
 
-    @Column
+/*
+    @Column(name = "mass_or_production_reproduction")
     private boolean massOrProductionReproduction;
+*/
 
     @Enumerated(EnumType.STRING)
     @Column

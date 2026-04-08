@@ -12,6 +12,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import lombok.extern.slf4j.Slf4j;
 import org.genom.reportservice.model.CalculationNeed;
+import org.genom.reportservice.model.TerTownshipLite;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
@@ -43,12 +44,12 @@ public class SeedNeedsRepo {
             switch (key) {
                 case TOWNSHIP:
                     if (val != null) {
-                        predicates.add(criteriaBuilder.equal(rootNeed.get("township"), ((TerTownship) val).getId()));
+                        predicates.add(criteriaBuilder.equal(rootNeed.get("township").get("id"), ((TerTownship) val).getId()));
                     }
                     break;
                 case CONTRACTOR:
                     if (val != null)
-                        predicates.add(criteriaBuilder.equal(rootNeed.get("contractor"), ((Contractor) val).getId()));
+                        predicates.add(criteriaBuilder.equal(rootNeed.get("contractor").get("id"), ((Contractor) val).getId()));
                     break;
                 case ORG_TYPE:
                     if (val != null) {
@@ -73,7 +74,7 @@ public class SeedNeedsRepo {
                     break;
                 case CULTURE:
                     if (val != null)
-                        predicates.add(rootNeed.get("culture").in(((Culture) val).getId()));
+                        predicates.add(rootNeed.get("culture").get("id").in(((Culture) val).getId()));
                     break;
                 case NEED:
                     if (val != null && !ReportUtils.onlyGroupingType(map) && !ReportUtils.onlyGroupingType(map)) {

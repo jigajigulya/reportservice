@@ -1,10 +1,9 @@
-package org.genom.reportservice.phytoExpReporter;
+package org.genom.reportservice.reporter;
 
 import com.gnm.model.common.CropKindCulture;
 import com.gnm.model.common.DepartmentStructure;
 import com.gnm.model.common.geo.TerTownship;
 import org.genom.reportservice.criteria.PhytoExpertizeCriteria;
-import org.genom.reportservice.reporter.PhytoExpQualReporter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,7 @@
-package org.genom.reportservice;
+package org.genom.reportservice.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.genom.reportservice.model.ContractorLite;
-import org.genom.reportservice.repository.ContractorRepo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

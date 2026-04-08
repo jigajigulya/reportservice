@@ -12,8 +12,11 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
 import org.genom.reportservice.criteria.PhytoExpertizeCriteria;
+import org.genom.reportservice.model.BackFillApiParam;
 import org.genom.reportservice.reporter.AssayCommonReporter01;
+import org.genom.reportservice.reporter.BackFillReporter;
 import org.genom.reportservice.reporter.PhytoExpQualReporter;
+import org.genom.reportservice.repository.BackFillRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +39,7 @@ public class ReportController {
 
     private final AssayCommonReporter01 reporter01;
     private final PhytoExpQualReporter phytoExpReporter;
+    private final BackFillReporter backFillReporter;
     /*.queryParam("dateBegin", dateBegin)
                 .queryParam("dateEnd", dateEnd)
                 .queryParam("towns",Stream.ofNullable(selectedTownships).flatMap(Collection::stream).map(TerTownship::getId).collect(Collectors.toList()))
@@ -57,6 +61,17 @@ public class ReportController {
     @PostMapping(value = "/phytoexpreport", consumes = "application/json")
     public ResponseEntity<byte[]> getReport(@RequestBody PhytoExpertizeCriteria criteria) {
         byte[] bytes = phytoExpReporter.download(
+                criteria
+        );
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bytes);
+
+    }
+
+    @PostMapping(value = "/backfillreport", consumes = "application/json")
+    public ResponseEntity<byte[]> getReport(@RequestBody BackFillApiParam criteria) {
+        byte[] bytes = backFillReporter.constructExcel(
                 criteria
         );
         return ResponseEntity.ok()

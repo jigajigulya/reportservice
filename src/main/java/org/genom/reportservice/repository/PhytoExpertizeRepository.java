@@ -100,7 +100,7 @@ public class PhytoExpertizeRepository {
      * @param phytoExpertizeCriteria
      * @return phytoExpertize by cropqualities report
      */
-    @Transactional
+    @Transactional(readOnly = true)
     @LogExecTime
     public List<PhytoExpertizeQualReport> findForQualReport(PhytoExpertizeCriteria phytoExpertizeCriteria) {
         log.info("get expertize for report {}", phytoExpertizeCriteria);

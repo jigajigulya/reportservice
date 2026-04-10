@@ -57,7 +57,7 @@ public class ReportRep {
     private Type fieldsToken = new TypeToken<List<AddDataField>>() {
     }.getType();
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<AssayCommonReport> findAssaysStatesCommonReport(CommonAssayReport cmPar, List<PhytoSubjectState> weeds, List<PhytoSubjectState> diseases, List<PhytoSubjectState> pests, List<CropTypeAndKindCulture> typeAndKindCultures) {
         gson = new GsonBuilder()
                 .serializeNulls()

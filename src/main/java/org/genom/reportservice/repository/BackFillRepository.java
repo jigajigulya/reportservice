@@ -38,7 +38,7 @@ public class BackFillRepository {
 
 
     @SneakyThrows
-    @Transactional
+    @Transactional(readOnly = true)
     @LogExecTime
     public List<SeedsBackFillView> findForView(SeedsBackFillCriteria seedsBackFillCriteria) {
 //        LOGGER.info("findForView seedsBackFills for view");

@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import lombok.extern.slf4j.Slf4j;
+import org.genom.reportservice.LogExecTime;
 import org.genom.reportservice.criteria.PhytoExpertizeCriteria;
 import org.genom.reportservice.model.PhytoExpertizeQualReport;
 import org.springframework.stereotype.Repository;
@@ -100,6 +101,7 @@ public class PhytoExpertizeRepository {
      * @return phytoExpertize by cropqualities report
      */
     @Transactional
+    @LogExecTime
     public List<PhytoExpertizeQualReport> findForQualReport(PhytoExpertizeCriteria phytoExpertizeCriteria) {
         log.info("get expertize for report {}", phytoExpertizeCriteria);
 

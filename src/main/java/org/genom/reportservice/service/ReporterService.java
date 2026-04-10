@@ -4,6 +4,7 @@ import com.gnm.model.pmon.CommonAssayReport;
 import com.gnm.model.pmon.calc.AssayCommonReport;
 import com.gnm.model.pmon.calc.CropTypeAndKindCulture;
 import com.gnm.model.pmon.calc.PhytoSubjectState;
+import org.genom.reportservice.LogExecTime;
 import org.genom.reportservice.repository.ReportRep;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +67,7 @@ public class ReporterService {
         );
     }
 
+    @LogExecTime
     public List<AssayCommonReport> findAssays(CommonAssayReport commonAssayReport,
                                                List<PhytoSubjectState> weeds,
                                                List<PhytoSubjectState> diseases,

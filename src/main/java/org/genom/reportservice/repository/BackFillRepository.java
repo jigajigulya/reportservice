@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.genom.reportservice.LogExecTime;
 import org.genom.reportservice.criteria.SeedsBackFillCriteria;
 import org.genom.reportservice.model.SeedsBackFillView;
 import org.hibernate.CacheMode;
@@ -38,6 +39,7 @@ public class BackFillRepository {
 
     @SneakyThrows
     @Transactional
+    @LogExecTime
     public List<SeedsBackFillView> findForView(SeedsBackFillCriteria seedsBackFillCriteria) {
 //        LOGGER.info("findForView seedsBackFills for view");
         if (Objects.isNull(seedsBackFillCriteria)) return new ArrayList<>();

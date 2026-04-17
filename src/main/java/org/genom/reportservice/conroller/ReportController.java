@@ -1,5 +1,6 @@
 package org.genom.reportservice.conroller;
 
+import com.gnm.criteria.SeedProductionParameter;
 import com.gnm.model.common.DepartmentStructure;
 import com.gnm.model.common.geo.ClimaticZone;
 import com.gnm.model.common.geo.TerTownship;
@@ -13,8 +14,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
 import org.genom.reportservice.criteria.PhytoExpertizeCriteria;
 import org.genom.reportservice.model.BackFillApiParam;
+import org.genom.reportservice.model.SeedProdParam;
 import org.genom.reportservice.reporter.AssayCommonReporter01;
 import org.genom.reportservice.reporter.BackFillReporter;
+import org.genom.reportservice.reporter.M30BReporter;
 import org.genom.reportservice.reporter.PhytoExpQualReporter;
 import org.genom.reportservice.repository.BackFillRepository;
 import org.springframework.http.MediaType;
@@ -40,6 +43,7 @@ public class ReportController {
     private final AssayCommonReporter01 reporter01;
     private final PhytoExpQualReporter phytoExpReporter;
     private final BackFillReporter backFillReporter;
+    private final M30BReporter m30BReporter;
     /*.queryParam("dateBegin", dateBegin)
                 .queryParam("dateEnd", dateEnd)
                 .queryParam("towns",Stream.ofNullable(selectedTownships).flatMap(Collection::stream).map(TerTownship::getId).collect(Collectors.toList()))
@@ -73,6 +77,17 @@ public class ReportController {
     public ResponseEntity<byte[]> getReport(@RequestBody BackFillApiParam criteria) {
         byte[] bytes = backFillReporter.constructExcel(
                 criteria
+        );
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bytes);
+
+    }
+
+    @PostMapping(value = "/30b", consumes = "application/json")
+    public ResponseEntity<byte[]> getReport(@RequestBody SeedProdParam seedProductionParameter) {
+        byte[] bytes = m30BReporter.constructExcel(
+                seedProductionParameter
         );
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
